@@ -3,7 +3,7 @@ import { invokeLLM } from "./_core/llm";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { storagePut } from "./storage";
+import { storageGetSignedUrl, storagePut } from "./storage";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -28,6 +28,10 @@ export const appRouter = router({
         fileBase64: z.string().min(1),
       }))
       .mutation(async ({ input, ctx }) => {
+        const isPdf = input.mimeType === "application/pdf" || input.fileName.toLowerCase().endsWith(".pdf");
+        if (!isPdf) {
+          throw new Error("Formato não suportado. Envie somente um orçamento em PDF.");
+        }
         const cleanBase64 = input.fileBase64.replace(/^data:[^;]+;base64,/, "");
         const fileBuffer = Buffer.from(cleanBase64, "base64");
         if (fileBuffer.length === 0 || fileBuffer.length > 20 * 1024 * 1024) {
@@ -37,19 +41,15 @@ export const appRouter = router({
         const owner = ctx.user?.id ?? "anonymous";
         const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
         const stored = await storagePut(`quotes/${owner}/${Date.now()}-${safeName}`, fileBuffer, input.mimeType);
+        const signedUrl = await storageGetSignedUrl(stored.key);
 
-        const attachment = input.mimeType.startsWith("image/")
-          ? {
-              type: "image_url" as const,
-              image_url: { url: stored.url, detail: "high" as const },
-            }
-          : {
-              type: "file_url" as const,
-              file_url: {
-                url: stored.url,
-                mime_type: "application/pdf" as const,
-              },
-            };
+        const attachment = {
+          type: "file_url" as const,
+          file_url: {
+            url: signedUrl,
+            mime_type: "application/pdf" as const,
+          },
+        };
 
         const response = await invokeLLM({
           messages: [

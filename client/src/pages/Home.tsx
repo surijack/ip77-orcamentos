@@ -136,7 +136,7 @@ function UploadCard({ file, isDragging, onFile, onDrop, onClear, inputRef }: { f
       onClick={() => !file && inputRef.current?.click()}
       className={`group relative cursor-pointer overflow-hidden rounded-[24px] border border-dashed p-7 transition-all duration-200 sm:p-9 ${isDragging ? "border-[#0b9da7] bg-[#eefafa]" : file ? "border-[#99d6da] bg-[#f7fcfc]" : "border-slate-300 bg-white hover:border-[#55bfc5] hover:bg-[#fbffff]"}`}
     >
-      <input ref={inputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.txt" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) onFile(selected); }} />
+      <input ref={inputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) onFile(selected); }} />
       <div className="flex flex-col items-center justify-center text-center">
         {file ? <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#dff3f4] text-[#0b8792]"><FileCheck2 size={29} /></div> : <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1f8fa] text-[#0b8792] transition-transform duration-200 group-hover:-translate-y-1"><CloudUpload size={29} /></div>}
         {file ? <>
@@ -146,7 +146,7 @@ function UploadCard({ file, isDragging, onFile, onDrop, onClear, inputRef }: { f
         </> : <>
           <div className="text-sm font-bold text-[#173f6b]">Arraste seu orçamento aqui</div>
           <div className="mt-1 text-xs text-slate-400">ou clique para selecionar um arquivo do computador</div>
-          <div className="mt-5 flex flex-wrap justify-center gap-2"><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">PDF</span><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">XLSX</span><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Imagem</span></div>
+          <div className="mt-5 flex flex-wrap justify-center gap-2"><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">PDF somente</span></div>
         </>}
       </div>
     </div>
@@ -229,7 +229,7 @@ export default function Home() {
       toast.success("Análise concluída", { description: `${extracted.items.length} itens foram extraídos do orçamento anexado.` });
     } catch (error) {
       setIsAnalyzing(false);
-      toast.error("Não foi possível analisar o orçamento", { description: error instanceof Error ? error.message : "Tente novamente com um PDF ou imagem legível." });
+      toast.error("Não foi possível analisar o orçamento", { description: error instanceof Error ? error.message : "Tente novamente com um arquivo PDF legível." });
     }
   };
   const clearUpload = () => { setFile(null); setItems([]); setShowEditor(false); if (inputRef.current) inputRef.current.value = ""; };
@@ -256,6 +256,6 @@ export default function Home() {
         </main>
       </div>
     </div>
-    {showHelp && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f2944]/30 p-5 backdrop-blur-sm" onClick={() => setShowHelp(false)}><div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e7f7f7] text-[#0b8792]"><CircleHelp size={21} /></div><button onClick={() => setShowHelp(false)} className="text-slate-300 hover:text-slate-500"><X size={18} /></button></div><h3 className="mt-5 text-lg font-black text-[#173f6b]">Como funciona?</h3><p className="mt-2 text-sm leading-6 text-slate-500">Envie o arquivo recebido, revise os produtos identificados e gere uma proposta com a identidade IP77. Nesta primeira versão, o fluxo de revisão e o modelo de documento já estão prontos para validação.</p><div className="mt-5 space-y-3">{["Envie PDF, planilha ou imagem", "Revise itens, códigos e quantidades", "Gere o PDF pronto para compartilhar"].map((text, index) => <div key={text} className="flex items-center gap-3 text-xs font-semibold text-slate-600"><div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e7f7f7] text-[10px] font-black text-[#0b8792]">{index + 1}</div>{text}</div>)}</div><button onClick={() => setShowHelp(false)} className="mt-7 w-full rounded-xl bg-[#173f6b] py-3 text-sm font-bold text-white hover:bg-[#0f3157]">Entendi</button></div></div>}
+    {showHelp && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f2944]/30 p-5 backdrop-blur-sm" onClick={() => setShowHelp(false)}><div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e7f7f7] text-[#0b8792]"><CircleHelp size={21} /></div><button onClick={() => setShowHelp(false)} className="text-slate-300 hover:text-slate-500"><X size={18} /></button></div><h3 className="mt-5 text-lg font-black text-[#173f6b]">Como funciona?</h3><p className="mt-2 text-sm leading-6 text-slate-500">Envie um orçamento em PDF, revise os produtos identificados e gere uma proposta com a identidade IP77.</p><div className="mt-5 space-y-3">{["Envie um orçamento em PDF", "Revise itens, códigos e quantidades", "Gere o PDF pronto para compartilhar"].map((text, index) => <div key={text} className="flex items-center gap-3 text-xs font-semibold text-slate-600"><div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e7f7f7] text-[10px] font-black text-[#0b8792]">{index + 1}</div>{text}</div>)}</div><button onClick={() => setShowHelp(false)} className="mt-7 w-full rounded-xl bg-[#173f6b] py-3 text-sm font-bold text-white hover:bg-[#0f3157]">Entendi</button></div></div>}
   </div>;
 }
