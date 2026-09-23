@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 const LOGO = "/manus-storage/ip77-logo_ab23866c.png";
 const IP77_COMPANY = {
@@ -40,24 +41,6 @@ type QuoteItem = {
   quantity: string;
 };
 
-const demoItems: QuoteItem[] = [
-  { id: 1, name: "Módulo bifacial 132 cel. N-Type 620W cabo 1.5M JA Solar", code: "MFJA-1.5-BF-132-620W", quantity: "40 PC" },
-  { id: 2, name: "Inversor de corrente híbrido trifásico 3 MPPT 380V 20KW FoxESS", code: "INVFX-H-TR-380-20KW", quantity: "1 PC" },
-  { id: 3, name: "Garra aterramento 2 peças alumínio", code: "ATERRA2A", quantity: "10 JG" },
-  { id: 4, name: "Grampo final 30mm 4 peças alumínio", code: "GRFN304A", quantity: "10 JG" },
-  { id: 5, name: "Grampo intermediário 2 peças alumínio", code: "GRINT2A", quantity: "30 JG" },
-  { id: 6, name: "Haste solar 10mm x 250mm 2 peças inox", code: "HASTE10X2502A", quantity: "15 PC" },
-  { id: 7, name: "Junção para perfil 1 peça alumínio", code: "JUNPERF1A", quantity: "20 PC" },
-  { id: 8, name: "Perfil fixação módulo fotov. 31.9mm x 53.8mm x 2.36m alumínio", code: "PERFIL2.36AL", quantity: "40 PC" },
-  { id: 9, name: "Suporte pé em L fibrocimento 2 peças alumínio", code: "SUPL2A", quantity: "15 PC" },
-  { id: 10, name: "Suporte ajustável p/ laje 1 peça alumínio", code: "SUPORTEAJ1A", quantity: "15 PC" },
-  { id: 11, name: "Cabo solar 6mm 1800V DC preto", code: "CBSOLAM-6MM-PT", quantity: "100 m" },
-  { id: 12, name: "Cabo solar 6mm 1800V DC vermelho", code: "CBSOLAM-6MM-VM", quantity: "100 m" },
-  { id: 13, name: "Conector solar fotovoltaico macho e fêmea c/2 pares", code: "CONECSOLAR-01", quantity: "3 PT" },
-  { id: 14, name: "Caixa de junção para bateria FoxESS", code: "CON TFOX-BAT".replace(" ", ""), quantity: "1 PC" },
-  { id: 15, name: "Bateria 5.2KW para inversores FoxESS", code: "BATFX-192V-5.2KWH-AT", quantity: "3 PC" },
-];
-
 const recentQuotes = [
   { name: "Cotação WEB-006817086", client: "Projeto residencial · 24,8 kWp", date: "Hoje, 14:38", status: "Pronta", value: "R$ 61.911,91" },
   { name: "Cotação WEB-006816942", client: "Integração comercial · 48 kWp", date: "Ontem, 17:12", status: "Pronta", value: "R$ 108.450,00" },
@@ -67,6 +50,15 @@ const recentQuotes = [
 function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+    reader.readAsDataURL(file);
+  });
 }
 
 function Sidebar({ active, onNavigate }: { active: string; onNavigate: (label: string) => void }) {
@@ -204,8 +196,9 @@ export default function Home() {
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [showEditor, setShowEditor] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [total, setTotal] = useState("R$ 61.911,91");
-  const [quoteNumber, setQuoteNumber] = useState("IP77-2026-0923");
+  const [total, setTotal] = useState("");
+  const [quoteNumber, setQuoteNumber] = useState("");
+  const analyzeQuote = trpc.quote.analyze.useMutation();
 
   const itemCount = useMemo(() => items.length, [items]);
   const acceptFile = (selected: File) => {
@@ -219,15 +212,25 @@ export default function Home() {
     const dropped = event.dataTransfer.files?.[0];
     if (dropped) acceptFile(dropped);
   };
-  const analyze = () => {
+  const analyze = async () => {
     if (!file) return;
     setIsAnalyzing(true);
-    window.setTimeout(() => {
-      setItems(demoItems.map((item) => ({ ...item })));
+    try {
+      const extracted = await analyzeQuote.mutateAsync({
+        fileName: file.name,
+        mimeType: file.type || "application/pdf",
+        fileBase64: await fileToBase64(file),
+      });
+      setItems(extracted.items.map((item) => ({ ...item, id: item.id })));
+      setQuoteNumber(extracted.quoteNumber || "");
+      setTotal(extracted.total || "");
       setIsAnalyzing(false);
       setShowEditor(true);
-      toast.success("Análise concluída", { description: `${demoItems.length} itens foram identificados e estão prontos para revisão.` });
-    }, 900);
+      toast.success("Análise concluída", { description: `${extracted.items.length} itens foram extraídos do orçamento anexado.` });
+    } catch (error) {
+      setIsAnalyzing(false);
+      toast.error("Não foi possível analisar o orçamento", { description: error instanceof Error ? error.message : "Tente novamente com um PDF ou imagem legível." });
+    }
   };
   const clearUpload = () => { setFile(null); setItems([]); setShowEditor(false); if (inputRef.current) inputRef.current.value = ""; };
   const navigate = (label: string) => {
