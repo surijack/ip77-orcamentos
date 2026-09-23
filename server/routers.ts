@@ -77,6 +77,7 @@ export const appRouter = router({
                 type: "object",
                 properties: {
                   quoteNumber: { type: "string" },
+                  issueDate: { type: "string" },
                   supplier: { type: "string" },
                   customer: { type: "string" },
                   total: { type: "string" },
@@ -94,7 +95,7 @@ export const appRouter = router({
                     },
                   },
                 },
-                required: ["quoteNumber", "supplier", "customer", "total", "items"],
+                required: ["quoteNumber", "issueDate", "supplier", "customer", "total", "items"],
                 additionalProperties: false,
               },
             },
@@ -105,6 +106,7 @@ export const appRouter = router({
         if (typeof content !== "string") throw new Error("A IA não retornou dados estruturados.");
         const parsed = JSON.parse(content) as {
           quoteNumber: string;
+          issueDate: string;
           supplier: string;
           customer: string;
           total: string;
