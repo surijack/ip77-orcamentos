@@ -26,6 +26,12 @@ import {
 import { toast } from "sonner";
 
 const LOGO = "/manus-storage/ip77-logo_ab23866c.png";
+const IP77_COMPANY = {
+  cnpj: "42.643.561/0002-30",
+  address: "TR TRECHO 04 SIA SUL LOTE 42",
+  neighborhood: "ZONA INDUSTRIAL (GUARA)",
+  state: "DF",
+};
 
 type QuoteItem = {
   id: number;
@@ -182,7 +188,7 @@ function ProposalPreview({ items, quoteNumber, total, onPrint }: { items: QuoteI
   return <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(28,61,92,0.05)] print:shadow-none print:border-0">
     <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 print:hidden"><div><div className="text-sm font-bold text-[#173f6b]">Prévia da proposta</div><div className="mt-1 text-xs text-slate-400">Visualização do documento IP77</div></div><button onClick={onPrint} className="flex items-center gap-2 rounded-lg bg-[#0b8792] px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#08717a]"><Download size={14} /> Gerar PDF</button></div>
     <div className="proposal-print-area p-6 sm:p-8">
-      <div className="flex items-start justify-between gap-5 border-b-2 border-[#12a3a5] pb-5"><div className="flex items-center gap-3"><img src={LOGO} alt="IP77" className="h-12 w-auto" /><div><div className="text-xl font-black tracking-tight text-[#173f6b]">PROPOSTA COMERCIAL</div><div className="mt-0.5 text-xs text-slate-400">Fornecedor: IP77</div></div></div><div className="text-right"><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cotação</div><div className="mt-1 text-sm font-bold text-[#173f6b]">{quoteNumber}</div><div className="mt-1 text-[10px] text-slate-400">23/09/2026</div></div></div>
+      <div className="flex items-start justify-between gap-5 border-b-2 border-[#12a3a5] pb-5"><div className="flex min-w-0 items-start gap-3"><img src={LOGO} alt="IP77" className="h-12 w-auto shrink-0" /><div className="min-w-0"><div className="text-xl font-black tracking-tight text-[#173f6b]">PROPOSTA COMERCIAL</div><div className="mt-0.5 text-xs text-slate-400">Fornecedor: IP77</div><div className="mt-2 space-y-0.5 text-[9px] leading-3.5 text-slate-500"><div><span className="font-bold text-slate-600">CNPJ:</span> {IP77_COMPANY.cnpj}</div><div><span className="font-bold text-slate-600">Endereço:</span> {IP77_COMPANY.address}</div><div><span className="font-bold text-slate-600">Bairro:</span> {IP77_COMPANY.neighborhood} <span className="ml-2 font-bold text-slate-600">UF:</span> {IP77_COMPANY.state}</div></div></div></div><div className="shrink-0 text-right"><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cotação</div><div className="mt-1 text-sm font-bold text-[#173f6b]">{quoteNumber}</div><div className="mt-1 text-[10px] text-slate-400">23/09/2026</div></div></div>
       <div className="mt-6"><div className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Itens da proposta</div><table className="w-full border-collapse text-left"><thead><tr className="bg-[#173f6b] text-[10px] uppercase tracking-wider text-white"><th className="rounded-l-md px-3 py-2.5">Item</th><th className="px-3 py-2.5">Código</th><th className="rounded-r-md px-3 py-2.5 text-right">Qtd.</th></tr></thead><tbody>{items.map((item) => <tr key={item.id} className="border-b border-slate-100 text-[11px]"><td className="px-3 py-2.5 font-semibold text-slate-700">{item.name}</td><td className="px-3 py-2.5 font-mono text-[10px] text-slate-400">{item.code}</td><td className="px-3 py-2.5 text-right font-bold text-[#173f6b]">{item.quantity}</td></tr>)}</tbody></table></div>
       <div className="mt-6 flex items-center justify-between rounded-xl bg-[#f1f7fa] px-5 py-4"><div className="text-xs font-bold uppercase tracking-wider text-slate-500">Valor total</div><div className="text-2xl font-black text-[#173f6b]">{total}</div></div>
     </div>
