@@ -78,6 +78,9 @@ export const appRouter = router({
                 properties: {
                   quoteNumber: { type: "string" },
                   issueDate: { type: "string" },
+                  sellerName: { type: "string" },
+                  sellerEmail: { type: "string" },
+                  sellerPhone: { type: "string" },
                   supplier: { type: "string" },
                   customer: {
                     type: "object",
@@ -106,7 +109,7 @@ export const appRouter = router({
                     },
                   },
                 },
-                required: ["quoteNumber", "issueDate", "supplier", "customer", "total", "items"],
+                required: ["quoteNumber", "issueDate", "sellerName", "sellerEmail", "sellerPhone", "supplier", "customer", "total", "items"],
                 additionalProperties: false,
               },
             },
@@ -118,6 +121,9 @@ export const appRouter = router({
         const parsed = JSON.parse(content) as {
           quoteNumber: string;
           issueDate: string;
+          sellerName: string;
+          sellerEmail: string;
+          sellerPhone: string;
           supplier: string;
           customer: { name: string; document: string; address: string; cityState: string; phone: string };
           total: string;
