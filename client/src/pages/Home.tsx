@@ -51,7 +51,7 @@ const proposalObservations = {
     "É primordial que seja feita a conferência (módulos, inversores, estruturas e etc.) para evitar recebimento de modelos e quantidades erradas.",
     "Verificar se algum volume tem sinais de violação ou varia do produto.",
     "Se for detectado algum tipo de avaria ou problema com seu pedido é fundamental que seja fotografado ou realizar a filmagem dos volumes recebidos com as fotos das etiquetas dos volumes e produtos.",
-    "Em casos de qualquer problema (FALTA, SOBRA, AVARIA, etc), informe na frente da CTE (documento de transporte) e nos notifique com a imagem do documento e do produto danificado através do E-mail: sac@dynamisimportadora.com.br ou WhatsApp: (47) 99155-3879",
+    "Em casos de qualquer problema (FALTA, SOBRA, AVARIA, etc), informe na frente da CTE (documento de transporte) e envie ao seu vendedor as imagens do documento e do produto danificado.",
     "O prazo para retorno é de 48 horas para avaliar o caso e retornar com a solução.",
     "Em caso de Entrega frete (FOB) por conta do cliente: Responsabilidade 100% do Integrador, sem ação da distribuidora em caso de danos e problemas.",
     "Em caso de Entrega frete (CIF) por conta da ip77 * Sem contratação de descarga, abaixo orientações: ATENÇÃO! A obrigatoriedade da descarga é do Integrador. A descarga do material não está inclusa no valor do frete e todas as descargas que necessitem de equipamentos (exemplo empilhadeira, guindaste, mão de obra, entre outros) ficará sob responsabilidade do integrador.",
