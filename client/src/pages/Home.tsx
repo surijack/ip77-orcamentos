@@ -34,6 +34,30 @@ const IP77_COMPANY = {
   state: "DF",
 };
 
+const proposalObservations = {
+  general: [
+    "Essa PROPOSTA tem validade de 5 dias ou enquanto durar o estoque;",
+    "Pedidos emitidos possuem o prazo de 5 dias para a efetivação do pagamento, após isso pode ser cancelado;",
+  ],
+  products: [
+    "Realize a conferência dos itens listados neste orçamento antes de formalizar o pedido. Garanta que os produtos, quantidades, especificações técnicas e demais informações estejam em conformidade com as suas necessidades e expectativas, evitando qualquer tipo de erro ou divergência.",
+    "A responsabilidade pela configuração dos kits orçados é inteiramente do integrador. Ao confirmar o pedido, o cliente assume que todos os produtos e condições atendem plenamente aos requisitos do projeto. Qualquer modificação ou solicitação de ajustes posteriores poderá acarretar em alterações de prazo e custo.",
+  ],
+  delivery: [
+    "Esteja preparado para o recebimento de seu produto no dia previsto da entrega, a transportadora entrará em contato para alinhar a entrega com antecedência de 24Horas com o integrador ou cliente final (integrador esteja alinhado com seu cliente final, referente ao recebimento do produto e orientações abaixo).",
+    "Se a transportadora aparecer com o produto para descarga sem aviso prévio e não tiver como efetuar a descarga, pode solicitar a volta do material e alinhar a entrega para o dia seguinte.",
+    "No ato do recebimento conferir a quantidade de volumes físicos X a quantidade de volumes indicadas na NF/CCe.",
+    "Para facilitar a conferência, enviamos juntos com a NF a lista dos componentes com a descrição individual de cada item.",
+    "É primordial que seja feita a conferência (módulos, inversores, estruturas e etc.) para evitar recebimento de modelos e quantidades erradas.",
+    "Verificar se algum volume tem sinais de violação ou varia do produto.",
+    "Se for detectado algum tipo de avaria ou problema com seu pedido é fundamental que seja fotografado ou realizar a filmagem dos volumes recebidos com as fotos das etiquetas dos volumes e produtos.",
+    "Em casos de qualquer problema (FALTA, SOBRA, AVARIA, etc), informe na frente da CTE (documento de transporte) e nos notifique com a imagem do documento e do produto danificado através do E-mail: sac@dynamisimportadora.com.br ou WhatsApp: (47) 99155-3879",
+    "O prazo para retorno é de 48 horas para avaliar o caso e retornar com a solução.",
+    "Em caso de Entrega frete (FOB) por conta do cliente: Responsabilidade 100% do Integrador, sem ação da distribuidora em caso de danos e problemas.",
+    "Em caso de Entrega frete (CIF) por conta da ip77 * Sem contratação de descarga, abaixo orientações: ATENÇÃO! A obrigatoriedade da descarga é do Integrador. A descarga do material não está inclusa no valor do frete e todas as descargas que necessitem de equipamentos (exemplo empilhadeira, guindaste, mão de obra, entre outros) ficará sob responsabilidade do integrador.",
+  ],
+};
+
 type QuoteItem = {
   id: number;
   name: string;
@@ -183,6 +207,14 @@ function ProposalPreview({ items, quoteNumber, total, onPrint }: { items: QuoteI
       <div className="flex items-start justify-between gap-5 border-b-2 border-[#12a3a5] pb-5"><div className="flex min-w-0 items-start gap-3"><img src={LOGO} alt="IP77" className="h-12 w-auto shrink-0" /><div className="min-w-0"><div className="text-xl font-black tracking-tight text-[#173f6b]">PROPOSTA COMERCIAL</div><div className="mt-0.5 text-xs text-slate-400">Fornecedor: IP77</div><div className="mt-2 space-y-0.5 text-[9px] leading-3.5 text-slate-500"><div><span className="font-bold text-slate-600">CNPJ:</span> {IP77_COMPANY.cnpj}</div><div><span className="font-bold text-slate-600">Endereço:</span> {IP77_COMPANY.address}</div><div><span className="font-bold text-slate-600">Bairro:</span> {IP77_COMPANY.neighborhood} <span className="ml-2 font-bold text-slate-600">UF:</span> {IP77_COMPANY.state}</div></div></div></div><div className="shrink-0 text-right"><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cotação</div><div className="mt-1 text-sm font-bold text-[#173f6b]">{quoteNumber}</div><div className="mt-1 text-[10px] text-slate-400">23/09/2026</div></div></div>
       <div className="mt-6"><div className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Itens da proposta</div><table className="w-full border-collapse text-left"><thead><tr className="bg-[#173f6b] text-[10px] uppercase tracking-wider text-white"><th className="rounded-l-md px-3 py-2.5">Item</th><th className="px-3 py-2.5">Código</th><th className="rounded-r-md px-3 py-2.5 text-right">Qtd.</th></tr></thead><tbody>{items.map((item) => <tr key={item.id} className="border-b border-slate-100 text-[11px]"><td className="px-3 py-2.5 font-semibold text-slate-700">{item.name}</td><td className="px-3 py-2.5 font-mono text-[10px] text-slate-400">{item.code}</td><td className="px-3 py-2.5 text-right font-bold text-[#173f6b]">{item.quantity}</td></tr>)}</tbody></table></div>
       <div className="mt-6 flex items-center justify-between rounded-xl bg-[#f1f7fa] px-5 py-4"><div className="text-xs font-bold uppercase tracking-wider text-slate-500">Valor total</div><div className="text-2xl font-black text-[#173f6b]">{total}</div></div>
+      <div className="mt-7 border-t-2 border-[#12a3a5] pt-5 text-[9px] leading-[1.45] text-slate-600">
+        <div className="mb-3 text-[11px] font-black uppercase tracking-[0.12em] text-[#173f6b]">Observações</div>
+        <div className="space-y-1.5">{proposalObservations.general.map((text) => <p key={text} className="m-0">{text}</p>)}</div>
+        <div className="mt-4 mb-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[#0b8792]">Produtos</div>
+        <div className="space-y-1.5">{proposalObservations.products.map((text) => <p key={text} className="m-0">{text}</p>)}</div>
+        <div className="mt-4 mb-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[#0b8792]">Orientações</div>
+        <div className="space-y-1.5">{proposalObservations.delivery.map((text) => <p key={text} className="m-0">{text}</p>)}</div>
+      </div>
     </div>
   </div>;
 }
