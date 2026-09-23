@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1790185470844,
+      "tag": "0000_parallel_malcolm_colcord",
+      "breakpoints": true
+    }
+  ]
 }

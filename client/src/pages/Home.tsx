@@ -1,33 +1,252 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  CircleHelp,
+  CloudUpload,
+  Download,
+  FileCheck2,
+  FileText,
+  History,
+  LayoutDashboard,
+  LifeBuoy,
+  Loader2,
+  MoreHorizontal,
+  PackageCheck,
+  Plus,
+  ReceiptText,
+  Search,
+  Settings2,
+  Sparkles,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
-export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+const LOGO = "/manus-storage/ip77-logo_ab23866c.png";
 
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+type QuoteItem = {
+  id: number;
+  name: string;
+  code: string;
+  quantity: string;
+};
 
+const demoItems: QuoteItem[] = [
+  { id: 1, name: "Módulo bifacial 132 cel. N-Type 620W cabo 1.5M JA Solar", code: "MFJA-1.5-BF-132-620W", quantity: "40 PC" },
+  { id: 2, name: "Inversor de corrente híbrido trifásico 3 MPPT 380V 20KW FoxESS", code: "INVFX-H-TR-380-20KW", quantity: "1 PC" },
+  { id: 3, name: "Garra aterramento 2 peças alumínio", code: "ATERRA2A", quantity: "10 JG" },
+  { id: 4, name: "Grampo final 30mm 4 peças alumínio", code: "GRFN304A", quantity: "10 JG" },
+  { id: 5, name: "Grampo intermediário 2 peças alumínio", code: "GRINT2A", quantity: "30 JG" },
+  { id: 6, name: "Haste solar 10mm x 250mm 2 peças inox", code: "HASTE10X2502A", quantity: "15 PC" },
+  { id: 7, name: "Junção para perfil 1 peça alumínio", code: "JUNPERF1A", quantity: "20 PC" },
+  { id: 8, name: "Perfil fixação módulo fotov. 31.9mm x 53.8mm x 2.36m alumínio", code: "PERFIL2.36AL", quantity: "40 PC" },
+  { id: 9, name: "Suporte pé em L fibrocimento 2 peças alumínio", code: "SUPL2A", quantity: "15 PC" },
+  { id: 10, name: "Suporte ajustável p/ laje 1 peça alumínio", code: "SUPORTEAJ1A", quantity: "15 PC" },
+  { id: 11, name: "Cabo solar 6mm 1800V DC preto", code: "CBSOLAM-6MM-PT", quantity: "100 m" },
+  { id: 12, name: "Cabo solar 6mm 1800V DC vermelho", code: "CBSOLAM-6MM-VM", quantity: "100 m" },
+  { id: 13, name: "Conector solar fotovoltaico macho e fêmea c/2 pares", code: "CONECSOLAR-01", quantity: "3 PT" },
+  { id: 14, name: "Caixa de junção para bateria FoxESS", code: "CON TFOX-BAT".replace(" ", ""), quantity: "1 PC" },
+  { id: 15, name: "Bateria 5.2KW para inversores FoxESS", code: "BATFX-192V-5.2KWH-AT", quantity: "3 PC" },
+];
+
+const recentQuotes = [
+  { name: "Cotação WEB-006817086", client: "Projeto residencial · 24,8 kWp", date: "Hoje, 14:38", status: "Pronta", value: "R$ 61.911,91" },
+  { name: "Cotação WEB-006816942", client: "Integração comercial · 48 kWp", date: "Ontem, 17:12", status: "Pronta", value: "R$ 108.450,00" },
+  { name: "Cotação WEB-006816511", client: "Usina rural · 72 kWp", date: "22 set, 09:43", status: "Rascunho", value: "R$ 149.860,20" },
+];
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function Sidebar({ active, onNavigate }: { active: string; onNavigate: (label: string) => void }) {
+  const links = [
+    { label: "Visão geral", icon: LayoutDashboard },
+    { label: "Nova proposta", icon: Plus },
+    { label: "Histórico", icon: History },
+  ];
   return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
+    <aside className="hidden w-[248px] shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col print:hidden">
+      <div className="flex h-[86px] items-center border-b border-slate-100 px-7">
+        <img src={LOGO} alt="IP77" className="h-[48px] w-auto object-contain" />
+        <div className="ml-3 border-l border-slate-200 pl-3">
+          <div className="text-sm font-bold tracking-tight text-[#173f6b]">ORÇAMENTOS</div>
+          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.19em] text-slate-400">painel interno</div>
+        </div>
+      </div>
+      <nav className="flex-1 space-y-1 px-4 py-7">
+        <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Workspace</div>
+        {links.map(({ label, icon: Icon }) => (
+          <button
+            key={label}
+            onClick={() => onNavigate(label)}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition-all duration-200 ${active === label ? "bg-[#eaf6f7] text-[#0b8792] shadow-sm" : "text-slate-500 hover:bg-slate-50 hover:text-[#173f6b]"}`}
+          >
+            <Icon size={18} strokeWidth={active === label ? 2.5 : 2} />
+            {label}
+            {label === "Nova proposta" && <span className="ml-auto rounded-md bg-[#0b8792] px-1.5 py-0.5 text-[10px] font-bold text-white">+</span>}
+          </button>
+        ))}
+        <div className="mb-3 mt-9 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Preferências</div>
+        {[
+          { label: "Configurações", icon: Settings2 },
+          { label: "Ajuda e suporte", icon: LifeBuoy },
+        ].map(({ label, icon: Icon }) => (
+          <button key={label} onClick={() => onNavigate(label)} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-500 transition-all hover:bg-slate-50 hover:text-[#173f6b]">
+            <Icon size={18} /> {label}
+          </button>
+        ))}
+      </nav>
+      <div className="mx-4 mb-5 rounded-2xl bg-[#f2f8fb] p-4">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#173f6b]"><Sparkles size={14} className="text-[#0b9da7]" /> Automação IP77</div>
+        <p className="mt-2 text-[11px] leading-4 text-slate-500">Padronize propostas em poucos minutos e mantenha a sua identidade em cada envio.</p>
+      </div>
+    </aside>
+  );
+}
+
+function Topbar({ onHelp }: { onHelp: () => void }) {
+  return (
+    <header className="flex h-[86px] items-center justify-between border-b border-slate-200 bg-white px-5 sm:px-8 print:hidden">
+      <div className="flex items-center gap-3 lg:hidden">
+        <img src={LOGO} alt="IP77" className="h-10 w-auto" />
+        <div className="text-xs font-bold tracking-[0.16em] text-[#173f6b]">ORÇAMENTOS</div>
+      </div>
+      <div className="hidden items-center gap-2 text-sm text-slate-400 sm:flex"><span className="font-semibold text-slate-600">Workspace</span><span>/</span><span>Visão geral</span></div>
+      <div className="ml-auto flex items-center gap-3">
+        <button onClick={onHelp} className="hidden items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 sm:flex"><CircleHelp size={16} /> Como funciona?</button>
+        <div className="flex items-center gap-3 border-l border-slate-200 pl-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dff3f4] text-xs font-black text-[#0b8792]">IP</div>
+          <div className="hidden sm:block"><div className="text-xs font-bold text-slate-700">Equipe IP77</div><div className="text-[10px] text-slate-400">Administrador</div></div>
+          <ChevronDown size={15} className="text-slate-400" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function UploadCard({ file, isDragging, onFile, onDrop, onClear, inputRef }: { file: File | null; isDragging: boolean; onFile: (file: File) => void; onDrop: (event: React.DragEvent<HTMLDivElement>) => void; onClear: () => void; inputRef: React.RefObject<HTMLInputElement | null> }) {
+  return (
+    <div
+      onDragOver={(event) => { event.preventDefault(); }}
+      onDragEnter={(event) => { event.preventDefault(); }}
+      onDrop={onDrop}
+      onClick={() => !file && inputRef.current?.click()}
+      className={`group relative cursor-pointer overflow-hidden rounded-[24px] border border-dashed p-7 transition-all duration-200 sm:p-9 ${isDragging ? "border-[#0b9da7] bg-[#eefafa]" : file ? "border-[#99d6da] bg-[#f7fcfc]" : "border-slate-300 bg-white hover:border-[#55bfc5] hover:bg-[#fbffff]"}`}
+    >
+      <input ref={inputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.txt" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) onFile(selected); }} />
+      <div className="flex flex-col items-center justify-center text-center">
+        {file ? <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#dff3f4] text-[#0b8792]"><FileCheck2 size={29} /></div> : <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1f8fa] text-[#0b8792] transition-transform duration-200 group-hover:-translate-y-1"><CloudUpload size={29} /></div>}
+        {file ? <>
+          <div className="max-w-full truncate px-4 text-sm font-bold text-[#173f6b]">{file.name}</div>
+          <div className="mt-1 text-xs text-slate-400">{formatFileSize(file.size)} · pronto para análise</div>
+          <div className="mt-5 flex items-center gap-2"><button onClick={(event) => { event.stopPropagation(); onClear(); }} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100"><X size={14} /> Remover</button><button onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} className="flex items-center gap-1.5 rounded-lg bg-[#173f6b] px-3 py-2 text-xs font-bold text-white hover:bg-[#0f3157]"><Upload size={14} /> Trocar arquivo</button></div>
+        </> : <>
+          <div className="text-sm font-bold text-[#173f6b]">Arraste seu orçamento aqui</div>
+          <div className="mt-1 text-xs text-slate-400">ou clique para selecionar um arquivo do computador</div>
+          <div className="mt-5 flex flex-wrap justify-center gap-2"><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">PDF</span><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">XLSX</span><span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Imagem</span></div>
+        </>}
+      </div>
     </div>
   );
+}
+
+function ItemsEditor({ items, onChange }: { items: QuoteItem[]; onChange: (items: QuoteItem[]) => void }) {
+  const update = (id: number, field: keyof QuoteItem, value: string) => onChange(items.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  const remove = (id: number) => onChange(items.filter((item) => item.id !== id));
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(28,61,92,0.05)]">
+      <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div><div className="text-sm font-bold text-[#173f6b]">Itens identificados</div><div className="mt-1 text-xs text-slate-400">Revise os dados antes de montar a proposta final.</div></div>
+        <button onClick={() => onChange([...items, { id: Date.now(), name: "Novo item", code: "", quantity: "1 PC" }])} className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-[#173f6b] hover:border-[#8ccdd1] hover:bg-[#f3fbfb]"><Plus size={14} /> Adicionar item</button>
+      </div>
+      <div className="hidden grid-cols-[minmax(0,1fr)_170px_100px_30px] gap-4 border-b border-slate-100 bg-slate-50 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 md:grid"><div>Descrição do produto</div><div>Código</div><div>Quantidade</div><div /></div>
+      <div className="divide-y divide-slate-100">
+        {items.map((item, index) => <div key={item.id} className="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_170px_100px_30px] md:items-center md:gap-4">
+          <div><div className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 md:hidden">Descrição</div><input value={item.name} onChange={(event) => update(item.id, "name", event.target.value)} className="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none transition focus:border-[#8ccdd1] focus:bg-white" /></div>
+          <div><div className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 md:hidden">Código</div><input value={item.code} onChange={(event) => update(item.id, "code", event.target.value)} className="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2 font-mono text-[10px] text-slate-500 outline-none transition focus:border-[#8ccdd1] focus:bg-white" /></div>
+          <div><div className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 md:hidden">Quantidade</div><input value={item.quantity} onChange={(event) => update(item.id, "quantity", event.target.value)} className="w-full rounded-lg border border-transparent bg-slate-50 px-3 py-2 text-xs font-bold text-[#173f6b] outline-none transition focus:border-[#8ccdd1] focus:bg-white" /></div>
+          <button onClick={() => remove(item.id)} aria-label={`Remover item ${index + 1}`} className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 transition hover:bg-red-50 hover:text-red-500"><Trash2 size={15} /></button>
+        </div>)}
+      </div>
+      {items.length === 0 && <div className="px-5 py-12 text-center text-sm text-slate-400">Nenhum item adicionado.</div>}
+    </div>
+  );
+}
+
+function ProposalPreview({ items, quoteNumber, total, onPrint }: { items: QuoteItem[]; quoteNumber: string; total: string; onPrint: () => void }) {
+  return <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(28,61,92,0.05)] print:shadow-none print:border-0">
+    <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 print:hidden"><div><div className="text-sm font-bold text-[#173f6b]">Prévia da proposta</div><div className="mt-1 text-xs text-slate-400">Visualização do documento IP77</div></div><button onClick={onPrint} className="flex items-center gap-2 rounded-lg bg-[#0b8792] px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#08717a]"><Download size={14} /> Gerar PDF</button></div>
+    <div className="proposal-print-area p-6 sm:p-8">
+      <div className="flex items-start justify-between gap-5 border-b-2 border-[#12a3a5] pb-5"><div className="flex items-center gap-3"><img src={LOGO} alt="IP77" className="h-12 w-auto" /><div><div className="text-xl font-black tracking-tight text-[#173f6b]">PROPOSTA COMERCIAL</div><div className="mt-0.5 text-xs text-slate-400">Fornecedor: IP77</div></div></div><div className="text-right"><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cotação</div><div className="mt-1 text-sm font-bold text-[#173f6b]">{quoteNumber}</div><div className="mt-1 text-[10px] text-slate-400">23/09/2026</div></div></div>
+      <div className="mt-6"><div className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Itens da proposta</div><table className="w-full border-collapse text-left"><thead><tr className="bg-[#173f6b] text-[10px] uppercase tracking-wider text-white"><th className="rounded-l-md px-3 py-2.5">Item</th><th className="px-3 py-2.5">Código</th><th className="rounded-r-md px-3 py-2.5 text-right">Qtd.</th></tr></thead><tbody>{items.map((item) => <tr key={item.id} className="border-b border-slate-100 text-[11px]"><td className="px-3 py-2.5 font-semibold text-slate-700">{item.name}</td><td className="px-3 py-2.5 font-mono text-[10px] text-slate-400">{item.code}</td><td className="px-3 py-2.5 text-right font-bold text-[#173f6b]">{item.quantity}</td></tr>)}</tbody></table></div>
+      <div className="mt-6 flex items-center justify-between rounded-xl bg-[#f1f7fa] px-5 py-4"><div className="text-xs font-bold uppercase tracking-wider text-slate-500">Valor total</div><div className="text-2xl font-black text-[#173f6b]">{total}</div></div>
+    </div>
+  </div>;
+}
+
+export default function Home() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [active, setActive] = useState("Visão geral");
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [items, setItems] = useState<QuoteItem[]>([]);
+  const [showEditor, setShowEditor] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [total, setTotal] = useState("R$ 61.911,91");
+  const [quoteNumber, setQuoteNumber] = useState("IP77-2026-0923");
+
+  const itemCount = useMemo(() => items.length, [items]);
+  const acceptFile = (selected: File) => {
+    setFile(selected);
+    setShowEditor(false);
+    toast.success("Arquivo carregado", { description: "Clique em analisar para identificar os itens." });
+  };
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const dropped = event.dataTransfer.files?.[0];
+    if (dropped) acceptFile(dropped);
+  };
+  const analyze = () => {
+    if (!file) return;
+    setIsAnalyzing(true);
+    window.setTimeout(() => {
+      setItems(demoItems.map((item) => ({ ...item })));
+      setIsAnalyzing(false);
+      setShowEditor(true);
+      toast.success("Análise concluída", { description: `${demoItems.length} itens foram identificados e estão prontos para revisão.` });
+    }, 900);
+  };
+  const clearUpload = () => { setFile(null); setItems([]); setShowEditor(false); if (inputRef.current) inputRef.current.value = ""; };
+  const navigate = (label: string) => {
+    if (label === "Nova proposta") { clearUpload(); setActive(label); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    if (label === "Visão geral") { setActive(label); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    toast.info(label, { description: "Esta área está preparada para a próxima etapa do produto." });
+  };
+  const printProposal = () => { document.title = `${quoteNumber} - IP77`; window.print(); };
+
+  return <div className="min-h-screen bg-[#f7fafc] text-slate-700">
+    <div className="flex min-h-screen">
+      <Sidebar active={active} onNavigate={navigate} />
+      <div className="min-w-0 flex-1"><Topbar onHelp={() => setShowHelp(true)} />
+        <main className="mx-auto max-w-[1480px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0b9da7]"><span className="h-1.5 w-1.5 rounded-full bg-[#0b9da7]" /> Operação comercial</div><h1 className="text-3xl font-black tracking-[-0.03em] text-[#173f6b] sm:text-4xl">Transforme orçamentos<br className="hidden sm:block" /> em propostas IP77.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">Suba um orçamento recebido, revise os itens identificados e gere um documento profissional com a identidade da sua empresa.</p></div><div className="hidden items-center gap-2 rounded-xl border border-[#d8ecee] bg-white px-3 py-2.5 text-xs font-semibold text-[#0b8792] shadow-sm sm:flex"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#e6f7f7]"><Sparkles size={13} /></span> Fluxo inteligente IP77</div></div>
+          {!showEditor ? <>
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
+              <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_15px_40px_rgba(28,61,92,0.06)] sm:p-7"><div className="mb-5 flex items-start justify-between"><div><h2 className="text-base font-bold text-[#173f6b]">Comece por um orçamento</h2><p className="mt-1 text-xs text-slate-400">A plataforma identifica produtos, códigos e quantidades.</p></div><div className="hidden rounded-lg bg-[#edf8f8] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-[#0b8792] sm:block">Etapa 01 / 03</div></div><UploadCard file={file} isDragging={isDragging} onFile={acceptFile} onDrop={handleDrop} onClear={clearUpload} inputRef={inputRef} /><div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row"><div className="flex items-center gap-2 text-xs text-slate-400"><FileText size={15} className="text-slate-300" /> Arquivos de até 20 MB</div><button disabled={!file || isAnalyzing} onClick={analyze} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#173f6b] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_18px_rgba(23,63,107,0.2)] transition hover:bg-[#0f3157] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto">{isAnalyzing ? <><Loader2 size={16} className="animate-spin" /> Analisando arquivo...</> : <>Analisar orçamento <ArrowRight size={16} /></>}</button></div></section>
+              <section className="rounded-[24px] border border-slate-200 bg-[#173f6b] p-6 text-white shadow-[0_15px_40px_rgba(28,61,92,0.12)]"><div className="flex items-start justify-between"><div><div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7bd7d6]">Visão geral</div><h2 className="mt-2 text-lg font-bold">Seu espaço de trabalho</h2></div><div className="rounded-xl bg-white/10 p-2.5"><ReceiptText size={20} className="text-[#88e2e0]" /></div></div><div className="mt-8 grid grid-cols-2 gap-3"><div className="rounded-xl bg-white/10 p-4"><div className="text-2xl font-black">12</div><div className="mt-1 text-[11px] text-blue-100/70">propostas este mês</div></div><div className="rounded-xl bg-white/10 p-4"><div className="text-2xl font-black">98%</div><div className="mt-1 text-[11px] text-blue-100/70">itens reconhecidos</div></div></div><div className="mt-5 flex items-center gap-2 border-t border-white/10 pt-4 text-xs text-blue-100/70"><PackageCheck size={15} className="text-[#78d7d6]" /> 4 propostas aguardando revisão</div></section>
+            </div>
+            <section className="mt-8"><div className="mb-4 flex items-end justify-between"><div><h2 className="text-base font-bold text-[#173f6b]">Propostas recentes</h2><p className="mt-1 text-xs text-slate-400">Acompanhe os últimos documentos do workspace.</p></div><button onClick={() => navigate("Histórico")} className="hidden items-center gap-1 text-xs font-bold text-[#0b8792] hover:underline sm:flex">Ver histórico <ArrowRight size={14} /></button></div><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(28,61,92,0.04)]"><div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(180px,1fr)_140px_130px_40px] gap-4 border-b border-slate-100 bg-slate-50 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 md:grid"><div>Documento</div><div>Contexto</div><div>Atualizado</div><div>Status</div><div /></div>{recentQuotes.map((quote) => <div key={quote.name} className="grid gap-3 border-b border-slate-100 px-5 py-4 last:border-0 md:grid-cols-[minmax(0,1.4fr)_minmax(180px,1fr)_140px_130px_40px] md:items-center md:gap-4"><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#edf8f8] text-[#0b8792]"><FileText size={16} /></div><div><div className="text-xs font-bold text-[#173f6b]">{quote.name}</div><div className="mt-0.5 text-[11px] text-slate-400">{quote.value}</div></div></div><div className="hidden text-xs text-slate-500 md:block">{quote.client}</div><div className="hidden text-xs text-slate-400 md:block">{quote.date}</div><div><span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${quote.status === "Pronta" ? "bg-[#e7f7ee] text-[#2d8a5b]" : "bg-[#fff5df] text-[#b27b18]"}`}>{quote.status}</span></div><button onClick={() => toast.info("Ação rápida", { description: "Abra o histórico para acessar esta proposta." })} className="hidden justify-self-end text-slate-300 hover:text-slate-500 md:block"><MoreHorizontal size={18} /></button></div>)}</div></section>
+          </> : <div className="space-y-6"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><button onClick={() => setShowEditor(false)} className="mb-3 flex items-center gap-1 text-xs font-bold text-[#0b8792] hover:underline"><ArrowRight size={14} className="rotate-180" /> Voltar para o upload</button><h2 className="text-2xl font-black tracking-tight text-[#173f6b]">Revise sua proposta</h2><p className="mt-1 text-sm text-slate-500">{file?.name} · {itemCount} itens identificados</p></div><div className="flex items-center gap-2"><div className="hidden items-center gap-2 rounded-lg bg-[#e7f7ee] px-3 py-2 text-xs font-bold text-[#2d8a5b] sm:flex"><Check size={14} /> Análise concluída</div><button onClick={clearUpload} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50"><Trash2 size={14} /> Limpar</button></div></div><div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(390px,0.85fr)]"><div className="space-y-5"><ItemsEditor items={items} onChange={setItems} /><div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(28,61,92,0.04)]"><div className="mb-4 flex items-center gap-2 text-sm font-bold text-[#173f6b]"><Settings2 size={17} className="text-[#0b9da7]" /> Ajustes do documento</div><div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">Número da proposta</span><input value={quoteNumber} onChange={(event) => setQuoteNumber(event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#8ccdd1]" /></label><label className="block"><span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400">Valor total</span><input value={total} onChange={(event) => setTotal(event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#8ccdd1]" /></label></div><div className="mt-4 flex items-center gap-2 rounded-lg bg-[#f5fafb] p-3 text-xs text-slate-500"><Sparkles size={14} className="shrink-0 text-[#0b9da7]" /> A identidade visual IP77 será aplicada automaticamente ao gerar o documento.</div></div></div><ProposalPreview items={items} quoteNumber={quoteNumber} total={total} onPrint={printProposal} /></div></div>}
+        </main>
+      </div>
+    </div>
+    {showHelp && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f2944]/30 p-5 backdrop-blur-sm" onClick={() => setShowHelp(false)}><div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e7f7f7] text-[#0b8792]"><CircleHelp size={21} /></div><button onClick={() => setShowHelp(false)} className="text-slate-300 hover:text-slate-500"><X size={18} /></button></div><h3 className="mt-5 text-lg font-black text-[#173f6b]">Como funciona?</h3><p className="mt-2 text-sm leading-6 text-slate-500">Envie o arquivo recebido, revise os produtos identificados e gere uma proposta com a identidade IP77. Nesta primeira versão, o fluxo de revisão e o modelo de documento já estão prontos para validação.</p><div className="mt-5 space-y-3">{["Envie PDF, planilha ou imagem", "Revise itens, códigos e quantidades", "Gere o PDF pronto para compartilhar"].map((text, index) => <div key={text} className="flex items-center gap-3 text-xs font-semibold text-slate-600"><div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e7f7f7] text-[10px] font-black text-[#0b8792]">{index + 1}</div>{text}</div>)}</div><button onClick={() => setShowHelp(false)} className="mt-7 w-full rounded-xl bg-[#173f6b] py-3 text-sm font-bold text-white hover:bg-[#0f3157]">Entendi</button></div></div>}
+  </div>;
 }
