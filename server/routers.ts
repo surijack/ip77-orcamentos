@@ -79,7 +79,18 @@ export const appRouter = router({
                   quoteNumber: { type: "string" },
                   issueDate: { type: "string" },
                   supplier: { type: "string" },
-                  customer: { type: "string" },
+                  customer: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string" },
+                      document: { type: "string" },
+                      address: { type: "string" },
+                      cityState: { type: "string" },
+                      phone: { type: "string" },
+                    },
+                    required: ["name", "document", "address", "cityState", "phone"],
+                    additionalProperties: false,
+                  },
                   total: { type: "string" },
                   items: {
                     type: "array",
@@ -108,7 +119,7 @@ export const appRouter = router({
           quoteNumber: string;
           issueDate: string;
           supplier: string;
-          customer: string;
+          customer: { name: string; document: string; address: string; cityState: string; phone: string };
           total: string;
           items: Array<{ name: string; code: string; quantity: string }>;
         };
