@@ -406,7 +406,47 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
       toast.success("PDF baixado", { description: `${fileName}.pdf` });
     } catch (error) {
-      toast.error("Não foi possível baixar o PDF", { description: error instanceof Error ? error.message : "Tente novamente." });
+      try {
+        const fallbackPdf = new jsPDF("p", "mm", "a4");
+        const safeText = (value: string, max = 105) => value.length > max ? `${value.slice(0, max - 3)}...` : value;
+        fallbackPdf.setTextColor(23, 63, 107);
+        fallbackPdf.setFontSize(18);
+        fallbackPdf.text("IP77 Soluções Tecnológicas", 15, 20);
+        fallbackPdf.setFontSize(12);
+        fallbackPdf.text("PROPOSTA COMERCIAL", 15, 30);
+        fallbackPdf.setTextColor(70, 80, 90);
+        fallbackPdf.setFontSize(9);
+        fallbackPdf.text(`Cotação: ${quoteNumber || "Não informado"}`, 15, 42);
+        fallbackPdf.text(`Emissão: ${emissionDate || "Não informada"}`, 15, 48);
+        fallbackPdf.text(`Cliente: ${safeText(customer.name || "Não identificado")}`, 15, 58);
+        fallbackPdf.text(`CPF/CNPJ: ${customer.document || "Não identificado"}`, 15, 64);
+        fallbackPdf.text(`Vendedor: ${seller.name || "Não informado"} | ${seller.email || "Não informado"}`, 15, 70);
+        fallbackPdf.setTextColor(23, 63, 107);
+        fallbackPdf.setFontSize(10);
+        fallbackPdf.text("Itens da proposta", 15, 84);
+        fallbackPdf.setTextColor(70, 80, 90);
+        fallbackPdf.setFontSize(8);
+        let y = 92;
+        items.forEach((item, index) => {
+          if (y > 275) { fallbackPdf.addPage(); y = 20; }
+          fallbackPdf.text(`${index + 1}. ${safeText(item.name, 82)} | Código: ${item.code || "—"} | Qtd.: ${item.quantity}`, 15, y);
+          y += 7;
+        });
+        fallbackPdf.setTextColor(23, 63, 107);
+        fallbackPdf.setFontSize(14);
+        fallbackPdf.text(`Valor total: ${total || "R$ 0,00"}`, 15, Math.min(y + 12, 285));
+        const fallbackUrl = URL.createObjectURL(fallbackPdf.output("blob"));
+        const fallbackLink = document.createElement("a");
+        fallbackLink.href = fallbackUrl;
+        fallbackLink.download = `${fileName}.pdf`;
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        fallbackLink.remove();
+        window.setTimeout(() => URL.revokeObjectURL(fallbackUrl), 1000);
+        toast.success("PDF baixado", { description: "O layout visual foi substituído por uma versão compatível." });
+      } catch (fallbackError) {
+        toast.error("Não foi possível baixar o PDF", { description: fallbackError instanceof Error ? fallbackError.message : "Tente novamente." });
+      }
     }
   };
 
