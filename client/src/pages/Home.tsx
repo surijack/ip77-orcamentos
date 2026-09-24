@@ -229,7 +229,7 @@ function ItemsEditor({ items, onChange }: { items: QuoteItem[]; onChange: (items
 
 function ProposalPreview({ items, quoteNumber, emissionDate, seller, customer, total, onPrint }: { items: QuoteItem[]; quoteNumber: string; emissionDate: string; seller: SellerData; customer: CustomerData; total: string; onPrint: () => void }) {
   return <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_16px_42px_rgba(23,63,107,0.08)] print:shadow-none print:border-0">
-    <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 print:hidden"><div><div className="text-sm font-bold text-[#173f6b]">Prévia da proposta</div><div className="mt-1 text-xs text-slate-400">Documento profissional com a identidade da IP77</div></div><button onClick={onPrint} className="flex items-center gap-2 rounded-lg bg-[#173f6b] px-3.5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0f3157]"><Download size={14} /> Gerar PDF</button></div>
+    <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 print:hidden"><div><div className="text-sm font-bold text-[#173f6b]">Prévia da proposta</div><div className="mt-1 text-xs text-slate-400">Documento profissional com a identidade da IP77</div></div><div className="flex items-center gap-2"><button onClick={onPrint} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-[#173f6b] shadow-sm transition hover:bg-slate-50"><History size={14} /> Imprimir</button><button onClick={onPrint} className="flex items-center gap-2 rounded-lg bg-[#173f6b] px-3.5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0f3157]"><Download size={14} /> Baixar PDF</button></div></div>
     <div className="proposal-print-area overflow-hidden bg-white p-5 sm:p-8">
       <div className="overflow-hidden rounded-2xl border border-slate-200">
         <div className="flex items-center justify-between gap-5 bg-[#173f6b] px-5 py-4 text-white sm:px-7"><div className="flex items-center gap-3"><div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white p-1.5"><img src={LOGO} alt="IP77" className="h-full w-full object-contain" /></div><div><div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#7bd7d6]">IP77</div><div className="mt-0.5 text-lg font-black tracking-tight">Soluções Tecnológicas</div></div></div><div className="hidden text-right sm:block"><div className="text-[9px] font-bold uppercase tracking-[0.2em] text-blue-100/70">Proposta comercial</div><div className="mt-1 text-sm font-bold">{quoteNumber || "Sem número"}</div></div></div>
@@ -345,6 +345,7 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
       toast.error("Não foi possível preparar a proposta para impressão.");
       return;
     }
+    const fileName = `Proposta_${quoteNumber || "S-N"}_${customer.name || "Cliente"}`.replace(/[^a-z0-9_\-]/gi, "_");
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
       toast.error("A impressão foi bloqueada pelo navegador.", { description: "Permita pop-ups para gerar o PDF." });
@@ -353,7 +354,7 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
     const styles = Array.from(document.head.querySelectorAll("link[rel='stylesheet'], style"))
       .map((element) => element.outerHTML)
       .join("\n");
-    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Proposta IP77</title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${fileName}</title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
     printWindow.document.close();
     window.setTimeout(() => {
       printWindow.focus();
