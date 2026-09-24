@@ -394,7 +394,16 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
         pdf.addImage(canvas.toDataURL("image/jpeg", 0.94), "JPEG", margin, margin - offset, pageWidth, imageHeight);
         offset += pageHeight;
       }
-      pdf.save(`${fileName}.pdf`);
+      const pdfBlob = pdf.output("blob");
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `${fileName}.pdf`;
+      downloadLink.style.display = "none";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
       toast.success("PDF baixado", { description: `${fileName}.pdf` });
     } catch (error) {
       toast.error("Não foi possível baixar o PDF", { description: error instanceof Error ? error.message : "Tente novamente." });
