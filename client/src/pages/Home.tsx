@@ -365,7 +365,7 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
     const styles = Array.from(document.head.querySelectorAll("link[rel='stylesheet'], style"))
       .map((element) => element.outerHTML)
       .join("\n");
-    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${fileName}</title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title></title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
     printWindow.document.close();
     window.setTimeout(() => {
       printWindow.focus();
