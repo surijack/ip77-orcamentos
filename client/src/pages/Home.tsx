@@ -79,6 +79,11 @@ type SellerData = {
   phone: string;
 };
 
+type SessionUser = {
+  name: string | null;
+  email: string | null;
+};
+
 const emptyCustomer: CustomerData = { name: "", document: "", address: "", cityState: "", phone: "" };
 const emptySeller: SellerData = { name: "", email: "", phone: "" };
 const defaultSellers: SellerData[] = [
@@ -153,7 +158,7 @@ function Sidebar({ active, onNavigate }: { active: string; onNavigate: (label: s
   );
 }
 
-function Topbar({ onHelp }: { onHelp: () => void }) {
+function Topbar({ onHelp, user, onLogout }: { onHelp: () => void; user: SessionUser; onLogout: () => Promise<void> }) {
   return (
     <header className="flex h-[86px] items-center justify-between border-b border-slate-200 bg-white px-5 sm:px-8 print:hidden">
       <div className="flex items-center gap-3 lg:hidden">
@@ -165,8 +170,8 @@ function Topbar({ onHelp }: { onHelp: () => void }) {
         <button onClick={onHelp} className="hidden items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 sm:flex"><CircleHelp size={16} /> Como funciona?</button>
         <div className="flex items-center gap-3 border-l border-slate-200 pl-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dff3f4] text-xs font-black text-[#0b8792]">IP</div>
-          <div className="hidden sm:block"><div className="text-xs font-bold text-slate-700">Equipe IP77</div><div className="text-[10px] text-slate-400">Administrador</div></div>
-          <ChevronDown size={15} className="text-slate-400" />
+          <div className="hidden sm:block"><div className="text-xs font-bold text-slate-700">{user.name || user.email || "Vendedor IP77"}</div><div className="text-[10px] text-slate-400">{user.email || "Conta corporativa"}</div></div>
+          <button onClick={() => void onLogout()} title="Sair" className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><ChevronDown size={15} className="rotate-180" /></button>
         </div>
       </div>
     </header>
@@ -242,7 +247,7 @@ function ProposalPreview({ items, quoteNumber, emissionDate, seller, customer, t
   </div>;
 }
 
-export default function Home() {
+export default function Home({ user, onLogout }: { user: SessionUser; onLogout: () => Promise<void> }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [active, setActive] = useState("Visão geral");
   const [file, setFile] = useState<File | null>(null);
@@ -258,6 +263,11 @@ export default function Home() {
   const [sellers, setSellers] = useState<SellerData[]>(defaultSellers);
   const [customer, setCustomer] = useState<CustomerData>(emptyCustomer);
   const analyzeQuote = trpc.quote.analyze.useMutation();
+  const accountSeller = useMemo(() => {
+    const email = user.email?.toLowerCase() ?? "";
+    const saved = defaultSellers.find((entry) => entry.email.toLowerCase() === email);
+    return saved ?? { name: user.name || "", email: user.email || "", phone: "" };
+  }, [user.email, user.name]);
 
   useEffect(() => {
     try {
@@ -270,6 +280,10 @@ export default function Home() {
       // Mantém os vendedores padrão caso o armazenamento local não esteja disponível.
     }
   }, []);
+
+  useEffect(() => {
+    setSeller(accountSeller);
+  }, [accountSeller]);
 
   const itemCount = useMemo(() => items.length, [items]);
   const updateSeller = (field: keyof SellerData, value: string) => setSeller((current) => ({ ...current, [field]: value }));
@@ -311,7 +325,7 @@ export default function Home() {
       setItems(extracted.items.map((item) => ({ ...item, id: item.id })));
       setQuoteNumber(extracted.quoteNumber || "");
       setEmissionDate(extracted.issueDate || "");
-      setSeller({ name: extracted.sellerName || "", email: extracted.sellerEmail || "", phone: extracted.sellerPhone || "" });
+      setSeller(accountSeller);
       setCustomer(extracted.customer || emptyCustomer);
       setTotal(extracted.total || "");
       setIsAnalyzing(false);
@@ -354,7 +368,7 @@ export default function Home() {
   return <div className="min-h-screen bg-[#f7fafc] text-slate-700">
     <div className="flex min-h-screen">
       <Sidebar active={active} onNavigate={navigate} />
-      <div className="min-w-0 flex-1"><Topbar onHelp={() => setShowHelp(true)} />
+      <div className="min-w-0 flex-1"><Topbar onHelp={() => setShowHelp(true)} user={user} onLogout={onLogout} />
         <main className="mx-auto max-w-[1480px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0b9da7]"><span className="h-1.5 w-1.5 rounded-full bg-[#0b9da7]" /> Operação comercial</div><h1 className="text-3xl font-black tracking-[-0.03em] text-[#173f6b] sm:text-4xl">Transforme orçamentos<br className="hidden sm:block" /> em propostas IP77.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-slate-500">Suba um orçamento recebido, revise os itens identificados e gere um documento profissional com a identidade da sua empresa.</p></div><div className="hidden items-center gap-2 rounded-xl border border-[#d8ecee] bg-white px-3 py-2.5 text-xs font-semibold text-[#0b8792] shadow-sm sm:flex"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#e6f7f7]"><Sparkles size={13} /></span> Fluxo inteligente IP77</div></div>
           {!showEditor ? <>
