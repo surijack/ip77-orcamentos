@@ -348,7 +348,7 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
       toast.error("Não foi possível preparar a proposta para impressão.");
       return;
     }
-    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
       toast.error("A impressão foi bloqueada pelo navegador.", { description: "Permita pop-ups para gerar o PDF." });
       return;
@@ -358,11 +358,11 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
       .join("\n");
     printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Proposta IP77</title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
     printWindow.document.close();
-    printWindow.addEventListener("load", () => {
+    window.setTimeout(() => {
       printWindow.focus();
       printWindow.print();
       printWindow.close();
-    }, { once: true });
+    }, 700);
   };
 
   return <div className="min-h-screen bg-[#f7fafc] text-slate-700">
