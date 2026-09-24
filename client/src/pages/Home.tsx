@@ -328,7 +328,28 @@ export default function Home() {
     if (label === "Visão geral") { setActive(label); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     toast.info(label, { description: "Esta área está preparada para a próxima etapa do produto." });
   };
-  const printProposal = () => { const previousTitle = document.title; document.title = " "; window.print(); window.setTimeout(() => { document.title = previousTitle; }, 1000); };
+  const printProposal = () => {
+    const proposal = document.querySelector<HTMLElement>(".proposal-print-area");
+    if (!proposal) {
+      toast.error("Não foi possível preparar a proposta para impressão.");
+      return;
+    }
+    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    if (!printWindow) {
+      toast.error("A impressão foi bloqueada pelo navegador.", { description: "Permita pop-ups para gerar o PDF." });
+      return;
+    }
+    const styles = Array.from(document.head.querySelectorAll("link[rel='stylesheet'], style"))
+      .map((element) => element.outerHTML)
+      .join("\n");
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Proposta IP77</title>${styles}</head><body class="print-only-proposal">${proposal.outerHTML}</body></html>`);
+    printWindow.document.close();
+    printWindow.addEventListener("load", () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, { once: true });
+  };
 
   return <div className="min-h-screen bg-[#f7fafc] text-slate-700">
     <div className="flex min-h-screen">
