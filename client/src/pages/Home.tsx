@@ -91,6 +91,11 @@ const emptySeller: SellerData = { name: "", email: "", phone: "" };
 const defaultSellers: SellerData[] = [
   { name: "Lucas Souza", email: "lucas.ferreira@ip77.com.br", phone: "(61) 99110-7925" },
   { name: "Nathalia Silva", email: "nathalia.silva@ip77.com.br", phone: "(61) 99438-5688" },
+  { name: "Gabriel Dias", email: "gabriel.dias@ip77.com.br", phone: "(61) 98200-3372" },
+  { name: "Giullia Borges", email: "giulia.borges@ip77.com.br", phone: "(61) 99277-3431" },
+  { name: "Fabricio Lara", email: "fabricio.lara@ip77.com.br", phone: "(61) 99274-0645" },
+  { name: "Rainey Soares", email: "rainey.soares@ip77.com.br", phone: "(61) 98323-1844" },
+  { name: "Andreza Silva", email: "andreza.silva@ip77.com.br", phone: "(61) 99309-0069" },
 ];
 const SELLERS_STORAGE_KEY = "ip77-sellers";
 
@@ -273,7 +278,11 @@ export default function Home({ user, onLogout }: { user?: SessionUser; onLogout?
       const stored = window.localStorage.getItem(SELLERS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as SellerData[];
-        if (Array.isArray(parsed) && parsed.length > 0) setSellers(parsed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = [...parsed, ...defaultSellers.filter((entry) => !parsed.some((saved) => saved.email === entry.email))];
+          setSellers(merged);
+          window.localStorage.setItem(SELLERS_STORAGE_KEY, JSON.stringify(merged));
+        }
       }
     } catch {
       // Mantém os vendedores padrão caso o armazenamento local não esteja disponível.
